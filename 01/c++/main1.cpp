@@ -23,10 +23,11 @@ struct Step {
     }
 };
 
-int main(int /*argc*/, char** argv) {
+int main() {
     Dir d;
     Pos p;        
-    for (auto s: split(argv[1], ',')) {
+    std::string line; std::getline(std::cin, line);
+    for (auto s: split(line, ',')) {
         Step step{trim(s)};
         d.rotate(step.turn);
         p.forward(d, step.len);

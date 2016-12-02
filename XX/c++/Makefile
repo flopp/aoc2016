@@ -2,3 +2,9 @@ CXXFLAGS=-std=c++11 -W -Wall -I../../XX/c++/
 
 %: %.cpp ../../XX/c++/utils.h
 	$(CXX) $(CXXFLAGS) -o $@ $< 
+
+all: $(PROGS)
+
+clean:
+	rm -f $(PROGS)
+
