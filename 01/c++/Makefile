@@ -1,6 +1,7 @@
 PROGS=main1 main2
 include ../../XX/c++/Makefile
 
+
 test1: main1 ../test1.txt ../test2.txt ../test3.txt
 	@echo "expected: 5"
 	@./main1 < ../test1.txt

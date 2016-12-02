@@ -7,4 +7,3 @@ all: $(PROGS)
 
 clean:
 	rm -f $(PROGS)
-
