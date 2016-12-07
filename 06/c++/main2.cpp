@@ -1,33 +1,31 @@
 #include <iostream>
 #include <string>
-#include <map>
 #include <vector>
 
 int main() {
-    std::vector<std::vector<int>> counts;
+    std::vector<int> c;
+    int w = 0;
     
     std::string line;
     while (std::getline(std::cin, line)) {
-        if (counts.empty()) {
-            counts.assign(line.size(), std::vector<int>(26, 0));
-        }
-        for (auto i = 0u; i < line.size(); ++i) {
-            counts[i][line[i] - 'a']++;
+        if (c.empty()) { w = line.size(); c.assign(26 * w, 0); }
+        
+        for (int i = 0; i < w; ++i) {
+            c[26 * i + (line[i] - 'a')]++;
         }
     }
     
-    for (const auto& v: counts) {
-        int count = -1;
-        char c = '?';
-        for (auto i = 0u; i < v.size(); ++i) {
-            if (v[i] > 0 && (count < 0 || v[i] < count)) {
-                count = v[i];
-                c = 'a' + i;
+    line.resize(w);
+    for (int i = 0; i < w; ++i) {
+        int min_c = -1;
+        for (int j = 0; j < 26; ++j) {
+            if (c[26 * i + j] > 0 && (min_c < 0 || c[26 * i + j] < min_c)) {
+                min_c = c[26 * i + j];
+                line[i] = 'a' + j;
             }
         }
-        std::cout << c;
     }
-    std::cout << std::endl;
+    std::cout << line << std::endl;
     
     return 0;
 }
