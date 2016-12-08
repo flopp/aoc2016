@@ -1,4 +1,5 @@
 #include <iostream>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -13,13 +14,13 @@ struct Grid {
         }
     }
     
-    void rot_row(int y, int dx) {
+    void rrow(int y, int dx) {
         for (int i = 0; i < dx; ++i) {
             g[y] = g[y].back() + g[y].substr(0, g[y].size() - 1);
         }
     }
     
-    void rot_col(int x, int dy) {
+    void rcol(int x, int dy) {
         for (int i = 0; i < dy; ++i) {
             const char c = g.back()[x];
             for (int y = g.size() - 1; y >= 1; --y) {
@@ -49,22 +50,21 @@ std::ostream& operator<<(std::ostream& os, const Grid& g) {
 int main(int /*argc*/, char** argv) {
     Grid g(std::stoi(argv[1]), std::stoi(argv[2]));
     
+    const std::vector<std::pair<std::regex, void (Grid::*)(int, int)>> re_fs{
+        {std::regex{"rect (\\d+)x(\\d+)"},               &Grid::rect},
+        {std::regex{"rotate row y=(\\d+) by (\\d+)"},    &Grid::rrow},
+        {std::regex{"rotate column x=(\\d+) by (\\d+)"}, &Grid::rcol}};
+    
     std::string line;
     while (std::getline(std::cin, line)) {
-        if (line.find("rect") == 0) {
-            line = line.substr(5);
-            auto p = line.find("x");
-            g.rect(std::stoi(line.substr(0, p)), std::stoi(line.substr(p + 1)));
-        } else if (line.find("rotate row") == 0) {
-            line = line.substr(13);
-            auto p = line.find(" by ");
-            g.rot_row(std::stoi(line.substr(0, p)), std::stoi(line.substr(p + 4)));
-        } else if (line.find("rotate column") == 0) {
-            line = line.substr(16);
-            auto p = line.find(" by ");
-            g.rot_col(std::stoi(line.substr(0, p)), std::stoi(line.substr(p + 4)));
+        for (auto re_f: re_fs) {
+            std::smatch m;
+            if (std::regex_match(line, m, re_f.first)) {
+                (g.*(re_f.second))(std::stoi(m[1]), std::stoi(m[2]));
+                break;
+            }
         }
-    }    
+    }
     std::cout << g << std::endl;
     
     return 0;
