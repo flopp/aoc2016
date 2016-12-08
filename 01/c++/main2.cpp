@@ -1,8 +1,7 @@
 #include <iostream>
+#include <regex>
 #include <set>
 #include <string>
-#include <vector>
-#include "utils.h"
 
 struct Dir {
     int dx{0}, dy{1};
@@ -20,25 +19,15 @@ struct Pos {
     }
 };
 
-struct Step {
-    int turn;
-    int len;
-    explicit Step(const std::string& s) {
-        turn = (s[0] == 'L') ? -1 : +1;
-        len = std::stoi(s.substr(1));
-    }
-};
-
-
 int main() {
     Dir d;
     Pos p;
     std::set<Pos> visited{p};
     std::string line; std::getline(std::cin, line);
-    for (auto s: split(line, ',')) {
-        Step step{trim(s)};
-        d.rotate(step.turn);
-        for (int i = 0; i < step.len; ++i) {
+    const std::regex re("([RL])(\\d+)");
+    for (std::sregex_iterator m{line.begin(), line.end(), re}; m != std::sregex_iterator(); ++m) {
+        d.rotate(((*m)[1] == "L") ? -1 : +1);
+        for (int i = std::stoi((*m)[2]); i > 0; --i) {
             p.forward(d);
             if (visited.find(p) != visited.end()) {
                 std::cout << (std::abs(p.x) + std::abs(p.y)) << std::endl;             

@@ -1,5 +1,5 @@
 PROGS=main1 main2
-include ../../XX/c++/Makefile
+include ../../XX/Makefile.rules
 
 
 test1: main1 ../test.txt
