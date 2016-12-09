@@ -11,10 +11,18 @@ puzzle1: main1 ../puzzle.txt
 	@./main1 < ../puzzle.txt
 
 
-test2: main2 ../test2.txt
-	@echo "expected result: XXX"
-	@./main2 < ../test2.txt
-	
+test2a: main2 ../test2a.txt
+	@echo "expected result: XABCABCABCABCABCABCY"
+	@./main2 < ../test2a.txt
+
+test2b: main2 ../test2b.txt
+	@echo "expected result: 241920"
+	@./main2 < ../test2b.txt
+
+test2c: main2 ../test2c.txt
+	@echo "expected result: 445"
+	@./main2 < ../test2c.txt
+
 puzzle2: main2 ../puzzle.txt
 	@echo "puzzle result:"
 	@./main2 < ../puzzle.txt
