@@ -3,7 +3,7 @@ include ../../XX/Makefile.rules
 
 
 test1: main1 ../test1.txt
-	@echo "expected result: XXX"
+	@echo "expected result: 18"
 	@./main1 < ../test1.txt
 
 puzzle1: main1 ../puzzle.txt
@@ -12,7 +12,7 @@ puzzle1: main1 ../puzzle.txt
 
 
 test2a: main2 ../test2a.txt
-	@echo "expected result: XABCABCABCABCABCABCY"
+	@echo "expected result: 20"
 	@./main2 < ../test2a.txt
 
 test2b: main2 ../test2b.txt
