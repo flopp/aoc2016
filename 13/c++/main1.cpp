@@ -2,14 +2,20 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <utility>
 
-typedef std::pair<unsigned int, unsigned int> P;
+struct P {
+    unsigned int x, y;
+    
+    bool operator<(const P& p) const {
+        return x < p.x || (x == p.x && y < p.y);
+    }
+};
 
 bool is_space(const P& p, unsigned int f) {
-    unsigned int v = p.first*p.first + 3*p.first + 2*p.first*p.second + p.second + p.second*p.second + f;
+    unsigned int v = p.x*p.x + 3*p.x + 2*p.x*p.y + p.y + p.y*p.y + f;
     bool space = true;
     
+    // determine parity of v
     while (v) {
         space = !space;
         v = v & (v - 1);
@@ -35,34 +41,34 @@ int main() {
         open_list.pop_front();
         const auto d = dist[p];
         
-        if (p.first == tx && p.second == ty) {
+        if (p.x == tx && p.y == ty) {
             std::cout << d << std::endl;
             break;
         }
         
-        if (p.first > 0) {
-            const P n{p.first-1, p.second};
+        if (p.x > 0) {
+            const P n{p.x-1, p.y};
             if (is_space(n, favorite_number) && dist.find(n) == dist.end()) {
                 dist[n] = d + 1;
                 open_list.push_back(n);
             }
         }
-        if (p.second > 0) {
-            const P n{p.first, p.second-1};
-            if (is_space(n, favorite_number) && dist.find(n) == dist.end()) {
-                dist[n] = d + 1;
-                open_list.push_back(n);
-            }
-        }
-        {
-            const P n{p.first+1, p.second};
+        if (p.y > 0) {
+            const P n{p.x, p.y-1};
             if (is_space(n, favorite_number) && dist.find(n) == dist.end()) {
                 dist[n] = d + 1;
                 open_list.push_back(n);
             }
         }
         {
-            const P n{p.first, p.second+1};
+            const P n{p.x+1, p.y};
+            if (is_space(n, favorite_number) && dist.find(n) == dist.end()) {
+                dist[n] = d + 1;
+                open_list.push_back(n);
+            }
+        }
+        {
+            const P n{p.x, p.y+1};
             if (is_space(n, favorite_number) && dist.find(n) == dist.end()) {
                 dist[n] = d + 1;
                 open_list.push_back(n);
