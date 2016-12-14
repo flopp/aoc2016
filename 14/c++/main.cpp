@@ -12,7 +12,7 @@ int hexi(char c) {
 char* createPass(MD5& md5, const std::string& s, int additionalRounds) {
     char* hash = md5.digestString(const_cast<char*>(s.c_str()));
     for (int r = 0; r < additionalRounds; ++r) {
-        hash = md5.digestString(hash);
+        hash = md5.digestMemory(reinterpret_cast<BYTE*>(hash), 32);
     }
     return hash;
 }

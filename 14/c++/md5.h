@@ -1,5 +1,4 @@
-#ifndef MD5_H
-#define MD5_H
+#pragma once
 
 // Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
 // rights reserved.
@@ -22,13 +21,13 @@
 // These notices must be retained in any copies of any part of this
 // documentation and/or software.
 
+#include <cstdio>
+#include <cstring>
 
-
-// The original md5 implementation avoids external libraries.
-// This version has dependency on stdio.h for file input and
-// string.h for memcpy.
-#include <stdio.h>
-#include <string.h>
+typedef unsigned char      BYTE;
+typedef unsigned char*     POINTER;
+typedef unsigned short int UINT2;
+typedef unsigned int       UINT4;
 
 // Constants for MD5Transform routine.
 #define S11 7
@@ -48,12 +47,7 @@
 #define S43 15
 #define S44 21
 
-
-
-
-
-
-static unsigned char PADDING[64] = {
+static BYTE PADDING[64] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -91,37 +85,19 @@ static unsigned char PADDING[64] = {
   (a) += (b); \
   }
 
-typedef unsigned char BYTE ;
-
-// POINTER defines a generic pointer type
-typedef unsigned char *POINTER;
-
-// UINT2 defines a two byte word
-typedef unsigned short int UINT2;
-
-// UINT4 defines a four byte word
-typedef unsigned int UINT4;
-
-
-// convenient object that wraps
-// the C-functions for use in C++ only
-class MD5
-{
+class MD5 {
 private:
-  struct __context_t {
-    UINT4 state[4];                                   /* state (ABCD) */
-    UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
-    unsigned char buffer[64];                         /* input buffer */
-  } context ;
+  UINT4 _state[4]; /* state (ABCD) */
+  UINT4 _count[2];
+  BYTE  _buffer[64];
 
   // The core of the MD5 algorithm is here.
   // MD5 basic transformation. Transforms state based on block.
-  static void MD5Transform( UINT4 state[4], unsigned char block[64] )
-  {
+  static void MD5Transform(UINT4 state[4], BYTE block[64]) {
     register UINT4 a = state[0], b = state[1], c = state[2], d = state[3];
     UINT4 x[16];
 
-    Decode (x, block, 64);
+    Decode(x, block, 64);
 
     /* Round 1 */
     FF (a, b, c, d, x[ 0], S11, 0xd76aa478); /* 1 */
@@ -203,173 +179,127 @@ private:
 
   // Encodes input (UINT4) into output (unsigned char). Assumes len is
   // a multiple of 4.
-  static void Encode( unsigned char *output, UINT4 *input, unsigned int len )
-  {
-    unsigned int i, j;
-
-    for (i = 0, j = 0; j < len; i++, j += 4) {
-      output[j] = (unsigned char)(input[i] & 0xff);
-      output[j+1] = (unsigned char)((input[i] >> 8) & 0xff);
-      output[j+2] = (unsigned char)((input[i] >> 16) & 0xff);
-      output[j+3] = (unsigned char)((input[i] >> 24) & 0xff);
+  static void Encode(BYTE* output, UINT4 *input, unsigned int len) {
+    for (auto i = 0u; i < len; i += 4) {
+      *(output++) = (BYTE)((*input     )  & 0xff);
+      *(output++) = (BYTE)((*input >>  8) & 0xff);
+      *(output++) = (BYTE)((*input >> 16) & 0xff);
+      *(output++) = (BYTE)((*input >> 24) & 0xff);
+      ++input;
     }
   }
 
   // Decodes input (unsigned char) into output (UINT4). Assumes len is
   // a multiple of 4.
-  static void Decode( UINT4 *output, unsigned char *input, unsigned int len )
-  {
-    unsigned int i, j;
-
-    for (i = 0, j = 0; j < len; i++, j += 4)
-      output[i] = ((UINT4)input[j]) | (((UINT4)input[j+1]) << 8) |
-      (((UINT4)input[j+2]) << 16) | (((UINT4)input[j+3]) << 24);
+  static void Decode(UINT4 *output, BYTE *input, unsigned int len) {
+    for (auto i = 0u; i < len; i += 4)
+      *(output++) =
+        (((UINT4)input[i  ])      ) | 
+        (((UINT4)input[i+1]) <<  8) |
+        (((UINT4)input[i+2]) << 16) | 
+        (((UINT4)input[i+3]) << 24);
   }
-
 
 public:
-  // MAIN FUNCTIONS
-  MD5()
-  {
-    Init() ;
+  MD5() {
+    Init();
   }
 
-  // MD5 initialization. Begins an MD5 operation, writing a new context.
-  void Init()
-  {
-    context.count[0] = context.count[1] = 0;
+  void Init() {
+    _count[0] = _count[1] = 0;
   
     // Load magic initialization constants.
-    context.state[0] = 0x67452301;
-    context.state[1] = 0xefcdab89;
-    context.state[2] = 0x98badcfe;
-    context.state[3] = 0x10325476;
+    _state[0] = 0x67452301;
+    _state[1] = 0xefcdab89;
+    _state[2] = 0x98badcfe;
+    _state[3] = 0x10325476;
   }
 
-  // MD5 block update operation. Continues an MD5 message-digest
-  // operation, processing another message block, and updating the
-  // context.
-  void Update(
-    unsigned char *input,   // input block
-    unsigned int inputLen ) // length of input block
-  {
-    unsigned int i, index, partLen;
-
+  void Update(BYTE* input, unsigned int inputLen) {
     // Compute number of bytes mod 64
-    index = (unsigned int)((context.count[0] >> 3) & 0x3F);
+    unsigned int index = (unsigned int)((_count[0] >> 3) & 0x3F);
 
     // Update number of bits
-    if ((context.count[0] += ((UINT4)inputLen << 3))
-      < ((UINT4)inputLen << 3))
-      context.count[1]++;
-    context.count[1] += ((UINT4)inputLen >> 29);
+    if ((_count[0] += ((UINT4)inputLen << 3)) < ((UINT4)inputLen << 3)) {
+      _count[1]++;
+    }
+    _count[1] += ((UINT4)inputLen >> 29);
 
-    partLen = 64 - index;
+    const unsigned int partLen = 64 - index;
 
     // Transform as many times as possible.
+    unsigned int i;
     if (inputLen >= partLen) {
-      memcpy((POINTER)&context.buffer[index], (POINTER)input, partLen);
-      MD5Transform (context.state, context.buffer);
+      memcpy((POINTER)&_buffer[index], (POINTER)input, partLen);
+      MD5Transform(_state, _buffer);
 
-      for (i = partLen; i + 63 < inputLen; i += 64)
-        MD5Transform (context.state, &input[i]);
-
+      for (i = partLen; i + 63 < inputLen; i += 64) {
+        MD5Transform (_state, &input[i]);
+      }
+      
       index = 0;
-    }
-    else
+    } else {
       i = 0;
+    }
 
     /* Buffer remaining input */
-    memcpy((POINTER)&context.buffer[index], (POINTER)&input[i], inputLen-i);
+    memcpy((POINTER)&_buffer[index], (POINTER)&input[i], inputLen-i);
   }
 
-  // MD5 finalization. Ends an MD5 message-digest operation, writing the
-  // the message digest and zeroizing the context.
-  // Writes to digestRaw
-  void Final()
-  {
-    unsigned char bits[8];
-    unsigned int index, padLen;
-
+  void Final() {
     // Save number of bits
-    Encode( bits, context.count, 8 );
+    unsigned char bits[8];
+    Encode(bits, _count, 8);
 
     // Pad out to 56 mod 64.
-    index = (unsigned int)((context.count[0] >> 3) & 0x3f);
-    padLen = (index < 56) ? (56 - index) : (120 - index);
-    Update( PADDING, padLen );
+    unsigned int index = (unsigned int)((_count[0] >> 3) & 0x3f);
+    unsigned int padLen = (index < 56) ? (56 - index) : (120 - index);
+    Update(PADDING, padLen);
 
     // Append length (before padding)
-    Update( bits, 8 );
+    Update(bits, 8);
 
     // Store state in digest
-    Encode( digestRaw, context.state, 16);
+    Encode(digestRaw, _state, 16);
 
-    writeToString() ;
+    writeToString();
   }
 
-  /// Buffer must be 32+1 (nul) = 33 chars long at least 
-  void writeToString()
-  {
-    int pos ;
-
-    for( pos = 0 ; pos < 16 ; pos++ )
-      sprintf( digestChars+(pos*2), "%02x", digestRaw[pos] ) ;
+  static char ihex(int i) {
+      return (i <= 9) ? ('0' + i) : ('W' + i);
+  }
+  
+  void writeToString() {
+    char* p = digestChars;
+    for (int i = 0; i < 16; ++i) {
+      *(p++) = ihex(digestRaw[i] >> 4);
+      *(p++) = ihex(digestRaw[i] & 0xF);
+    }
+    *p = '\0';
   }
 
 
 public:
   // an MD5 digest is a 16-byte number (32 hex digits)
-  BYTE digestRaw[ 16 ] ;
+  BYTE digestRaw[16];
 
   // This version of the digest is actually
   // a "printf'd" version of the digest.
-  char digestChars[ 33 ] ;
-
-  /// Load a file from disk and digest it
-  // Digests a file and returns the result.
-  char* digestFile( char *filename )
-  {
-    Init() ;
-
-    FILE *file;
-    
-    int len;
-    unsigned char buffer[1024] ;
-
-    if( (file = fopen (filename, "rb")) == NULL )
-      printf( "%s can't be opened\n", filename ) ;
-    else
-    {
-      while( (len = fread( buffer, 1, 1024, file ) ) )
-        Update( buffer, len ) ;
-      Final();
-
-      fclose( file );
-    }
-
-    return digestChars ;
-  }
+  char digestChars[33];
 
   /// Digests a byte-array already in memory
-  char* digestMemory( BYTE *memchunk, int len )
-  {
-    Init() ;
-    Update( memchunk, len ) ;
-    Final() ;
-    
-    return digestChars ;
+  char* digestMemory(BYTE *memchunk, int len) {
+    Init();
+    Update(memchunk, len);
+    Final();
+    return digestChars;
   }
 
   // Digests a string and prints the result.
-  char* digestString( char *string )
-  {
-    Init() ;
-    Update( (unsigned char*)string, strlen(string) ) ;
-    Final() ;
-
-    return digestChars ;
+  char* digestString(char *string) {
+    Init();
+    Update((BYTE*)string, strlen(string));
+    Final();
+    return digestChars;
   }
-} ;
-
-#endif
+};
