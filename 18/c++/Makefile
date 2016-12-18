@@ -10,7 +10,6 @@ test2: main ../test2.txt
 puzzle1: main ../puzzle.txt
 	@echo "puzzle result:"
 	@time ./main 40 < ../puzzle.txt
-
 puzzle2: main ../puzzle.txt
 	@echo "puzzle result:"
 	@time ./main 400000 < ../puzzle.txt
