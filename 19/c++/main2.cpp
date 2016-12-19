@@ -2,24 +2,39 @@
 #include <string>
 #include <vector>
 
+struct Elf {
+    int index;
+    Elf* p;
+    Elf* n;
+
+    void disconnect() {
+        p->n = n;
+        n->p = p;
+    }
+};
+
 int main(int /*argc*/, char** argv) {
     int s = std::stoi(argv[1]);
-    std::vector<int> elves(s);
+
+    std::vector<Elf> elves(s);
     for (int i = 0; i < s; ++i) {
-        elves[i] = i+1;
+        elves[i].index = i+1;
     }
 
-    int i = 0;
-    while (s > 1) {
-        if ((s % 1000) == 0 || s < 1000) std::cout << s << std::endl;
-        int op = (i + s/2) % s;
-        for (int j = op + 1; j < s; ++j) { elves[j-1] = elves[j]; }
-        --s;
-        if (op > i) { ++i; }
-        i %= s;
+    for (int i = 0; i < s; ++i) {
+        elves[i].p = &elves[(i+s-1) % s];
+        elves[i].n = &elves[(i+1) % s];
     }
 
-    std::cout << elves[0] << std::endl;
+    Elf* e = &elves[0];
+    Elf* m = &elves[s/2];
+    for (int i = 0; i < s-1; ++i) {
+        m->disconnect();
+        m = m->n;
+        if ((s-i) % 2) m = m->n;
+        e = e->n;
+    }
+    std::cout << e->index << std::endl;
 
     return 0;
 }
